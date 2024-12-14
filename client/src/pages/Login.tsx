@@ -16,14 +16,43 @@ const initialFormValues = {
 const Login = () => {
     const [formValues, setFormValues] =
         useState<UserLoginData>(initialFormValues);
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [disabled, setDisabled] = useState<boolean>(true);
     const [loading, setLoading] = useState<boolean>(false);
 
     const { mutateAsync: login } = useLogin();
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
 
+        // Validate input based on field
+        let error = "";
+        if (id === "email") {
+            const emailRegex = /^[^@\s]+@mans\.edu\.eg$/;
+            if (!emailRegex.test(value)) {
+                error = "يجب أن يكون بريد إلكتروني صالحًا @mans.edu.eg";
+            }
+        } else if (id === "password") {
+            if (value.length < 6) {
+                error = "كلمة المرور يجب أن تكون على الأقل 6 أحرف";
+            }
+        }
+
+        // Update errors state
+        setErrors((prevErrors) => ({
+            ...prevErrors,
+            [id]: error,
+        }));
+
+        // Update form values
         setFormValues((prev) => ({ ...prev, [id]: value }));
+    };
+
+    const validateForm = () => {
+        const emailRegex = /^[^@\s]+@mans\.edu\.eg$/;
+        const isEmailValid = emailRegex.test(formValues.email);
+        const isPasswordValid = formValues.password.length >= 6;
+        return isEmailValid && isPasswordValid;
     };
 
     const handleSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
@@ -33,7 +62,6 @@ const Login = () => {
             await login(formValues);
             console.log(formValues);
         } catch (err) {
-            setLoading(false);
             console.log(err);
         } finally {
             setLoading(false);
@@ -42,16 +70,9 @@ const Login = () => {
     };
 
     useEffect(() => {
-        const isFilled = Object.values(formValues).every(
-            (value) => value !== ""
-        );
-
-        if (isFilled) {
-            setDisabled(false);
-        } else {
-            setDisabled(true);
-        }
+        setDisabled(!validateForm());
     }, [formValues]);
+
     return (
         <main className="w-full flex justify-end h-screen relative bg-[#F5F5F5]">
             <motion.div
@@ -98,6 +119,7 @@ const Login = () => {
                                         label={label}
                                         placeholder={placeholder}
                                         inputStyle="bg-transparent placeholder:text-neutral-1-400"
+                                        error={errors[id]} // Pass error message here
                                     />
                                 )
                             )}

@@ -30,16 +30,20 @@ const Signup = () => {
     const validateForm = () => {
         const newErrors: typeof errors = {};
 
-        if (formValues.username.trim().length < 3) {
-            newErrors.username = "اسم المستخدم يجب أن يكون 3 أحرف على الأقل";
+        // Username validation: at least 3 characters and must contain a number
+        const usernameRegex = /^(?=.*\d)[A-Za-z\d]{3,}$/;
+        if (!usernameRegex.test(formValues.username)) {
+            newErrors.username =
+                " يجب أن يكون 3 أحرف ورقم واحد على الأقل";
         }
 
+        // Email validation: must be in mans.edu.eg domain
         const emailRegex = /^[a-zA-Z0-9._%+-]+@mans\.edu\.eg$/;
         if (!emailRegex.test(formValues.email)) {
-            newErrors.email =
-                "البريد يجب أن يكون تابعاً لنطاق mans.edu.eg";
+            newErrors.email = "البريد يجب أن يكون تابعاً لنطاق mans.edu.eg";
         }
 
+        // Password validation: at least 6 characters
         if (formValues.password.length < 6) {
             newErrors.password = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
         }
